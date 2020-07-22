@@ -1,8 +1,7 @@
 import React, { useState,useEffect } from 'react'
-import axios from 'axios'
 import Names from './Names'
 import Filter from './Filter'
-
+import Services from './services/books'
 
 const App = () => {
   const [ persons, setPersons ] = useState([]) 
@@ -11,34 +10,72 @@ const App = () => {
   const [filterName, setFilterName] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    Services
+      .getAll()
       .then(res => {
-        setPersons(res.data)
+        setPersons(res)
       })
   }, [])
+
+  const deletePersons = id => {
+    const data = persons.find(p => p.id === id)
+    
+    if ( window.confirm(`Delete ${data.name}?`) ){
+      Services
+      .remove(id)
+      .then( res => {
+        setPersons(persons.filter(p => p !== data))
+        console.log(res)
+      })
+    }
+
+  }
 
   const addNames = (event) => {
     event.preventDefault()
     const newObject = {
         name: newName,
-        number: newNumber,
-        id: persons.length + 1
+        number: newNumber
     }
+
     if (persons.some(event => event.name === newName)) {
-      return (
-        alert(`${newName} is already added to phonebook.`)
-      )
+      const locate = persons.find( p => p.name === newName)
+      console.log(locate.id)
+      
+      if ( window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`) ){
+        Services
+          .update(locate.id, newObject)
+          .then(() => { setPersons(persons.map(p => p.name === newName ? Object.assign(locate, newObject) : p )) 
+          })
+      }
     }
-  setPersons(persons.concat(newObject))
-  console.log(persons.map(person => person.name))
-  setNewName('')
-  setNewNumber('')
+
+    else {  
+    Services
+      .create(newObject)
+      .then(res => {
+        setPersons(persons.concat(res))
+        setNewName('')
+        setNewNumber('')
+        console.log(res)
+      })
+
+    }
+        /* axios
+      .post(baseUrl, newObject)
+      .then(res => {
+        setPersons(persons.concat(res.data))
+        setNewName('')
+        setNewNumber('')
+      }) */
+    
+    
+      
   
 }
 
 
-const showFilterName = filterName === '' ? persons : persons.filter(x => x.name.toLowerCase().includes(filterName))
+const showFilterName = filterName === '' ? persons : persons.filter(x => x.name.toLowerCase().includes(filterName.toLowerCase()))
 
 
   const handleNameChange = (event) => {
@@ -82,7 +119,12 @@ const showFilterName = filterName === '' ? persons : persons.filter(x => x.name.
       </form>
       <h2>Numbers</h2>
       
-  {showFilterName.map(nNames => <Names key={nNames.id} persons={nNames} />)}
+  {showFilterName.map(nNames => 
+  <Names 
+  key={nNames.id} 
+  persons={nNames} 
+  deletePersons= {() => deletePersons(nNames.id)}
+  />)}
 
      
     </div>

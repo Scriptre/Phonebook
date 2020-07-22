@@ -1,8 +1,11 @@
 import React from 'react'
 
 
-const Names = ({persons}) =>(
-    <p>{persons.name} {persons.number}</p>
+const Names = ({ persons, deletePersons }) =>(
+    <div>
+    {persons.name} {persons.number}
+    <button onClick = {deletePersons}>delete</button>
+    </div>
 )
 
 export default Names
