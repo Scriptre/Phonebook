@@ -46,7 +46,7 @@ const App = () => {
         Services
           .update(locate.id, newObject)
           .then(() => { setPersons(persons.map(p => p.name === newName ? Object.assign(locate, newObject) : p )) 
-          })
+          console.log(Object.assign(locate, newObject))})
       }
     }
 
