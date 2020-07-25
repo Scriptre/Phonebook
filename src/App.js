@@ -2,12 +2,15 @@ import React, { useState,useEffect } from 'react'
 import Names from './Names'
 import Filter from './Filter'
 import Services from './services/books'
+import Notification from './Notification'
 
 const App = () => {
   const [ persons, setPersons ] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterName, setFilterName] = useState('')
+  const [message, setMessage] = useState('')
+  const [condition, setCondition] = useState(true)
 
   useEffect(() => {
     Services
@@ -25,6 +28,8 @@ const App = () => {
       .remove(id)
       .then( res => {
         setPersons(persons.filter(p => p !== data))
+        setCondition(false)
+        setMessage(`Information of ${data.name} has already been removed form server`)
         console.log(res)
       })
     }
@@ -46,7 +51,12 @@ const App = () => {
         Services
           .update(locate.id, newObject)
           .then(() => { setPersons(persons.map(p => p.name === newName ? Object.assign(locate, newObject) : p )) 
-          console.log(Object.assign(locate, newObject))})
+          console.log(Object.assign(locate, newObject))
+          setCondition(true)
+          setMessage(`Added ${newObject.name}`)
+          })
+
+        
       }
     }
 
@@ -57,6 +67,8 @@ const App = () => {
         setPersons(persons.concat(res))
         setNewName('')
         setNewNumber('')
+        setCondition(true)
+        setMessage(`Added ${newObject.name}`)
         console.log(res)
       })
 
@@ -97,7 +109,7 @@ const showFilterName = filterName === '' ? persons : persons.filter(x => x.name.
   return (
     <div>
       <h2>Phonebook</h2>
-  
+      <Notification message={message} condition={condition} />      
       <div>
         <Filter filter={filterName} handler={handleFilterName} />
       </div>
